@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1029125115617",
+    "project_id": "musicdetector-dbee1",
+    "storage_bucket": "musicdetector-dbee1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029125115617:android:43d02de8b6ef0b6ae6b1a0",
+        "android_client_info": {
+          "package_name": "com.example.practica_1_audio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1029125115617-kgqid01ss4g9jbb7jkgsp1ovrpl4sigt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.practica_1_audio",
+            "certificate_hash": "bc1fc081da9121c217c2cc6ee6d56db803306061"
+          }
+        },
+        {
+          "client_id": "1029125115617-39uogui4omh03e08r0e6ofpj1lo7o5si.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDCa55QOzqmezl8SG9J79-1BICv8kKMjM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1029125115617-39uogui4omh03e08r0e6ofpj1lo7o5si.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,10 +1,11 @@
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:practica_1_audio/bloc/home_bloc.dart';
 import 'package:practica_1_audio/datos_cancion.dart';
+
+import 'bloc/bloc/auth_bloc.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
@@ -19,9 +20,14 @@ class HomePage extends StatelessWidget {
         if (state is HomeRecording) {
           textoH = 'escuchando';
         }
+        if (state is reloadState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('agregada a favoritos')),
+          );
+        }
         if (state is RecordingSucces) {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (newContext) => BlocProvider.value(
+              builder: (context) => BlocProvider.value(
                     value: BlocProvider.of<HomeBloc>(context),
                     child: showingSong(
                         context, state.recordContent, state.favFlag),
@@ -35,7 +41,7 @@ class HomePage extends StatelessWidget {
         }
         if (state is favoritos) {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (newContext) => BlocProvider.value(
+              builder: (context) => BlocProvider.value(
                     value: BlocProvider.of<HomeBloc>(context),
                     child: showingFavs(context, state.listaParaPantalla),
                   )));
@@ -48,6 +54,7 @@ class HomePage extends StatelessWidget {
           return homie(context, true, textoH);
         } else if (state is RecordingSucces) {
           return homie(context, false, textoH);
+        } else if (state is reloadState) {
         } else if (state is RecordingError) {
         } else if (state is favoritos) {
           return homie(context, false, textoH);
@@ -58,16 +65,16 @@ class HomePage extends StatelessWidget {
   }
 }
 
-Widget presentacion(BuildContext context, DatosCancion cancion) {
+Widget presentacion(BuildContext context, Map<String, String> cancion) {
   return Container(
     child: Column(
       children: [
         Image(
-          image: NetworkImage(cancion.imagen),
+          image: NetworkImage("${cancion['imagen']}"),
           height: MediaQuery.of(context).size.width,
           width: MediaQuery.of(context).size.width,
         ),
-        Text(cancion.titulo)
+        Text("${cancion['titulo']}")
       ],
     ),
   );
@@ -221,19 +228,32 @@ Widget homie(BuildContext context, animate, String texto) {
                 ),
               ),
             ),
-            Material(
-              elevation: 8.0,
-              shape: CircleBorder(),
-              child: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: IconButton(
-                    // Use the FaIcon Widget + FontAwesomeIcons class for the IconData
-                    icon: FaIcon(FontAwesomeIcons.heart),
-                    onPressed: () {
-                      print('favoritos pressed');
-                      BlocProvider.of<HomeBloc>(context)
-                          .add(verFavoritosEvent());
-                    }),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 100, vertical: 30),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: IconButton(
+                        // Use the FaIcon Widget + FontAwesomeIcons class for the IconData
+                        icon: FaIcon(FontAwesomeIcons.heart),
+                        onPressed: () {
+                          print('favoritos pressed');
+                          BlocProvider.of<HomeBloc>(context)
+                              .add(verFavoritosEvent());
+                        }),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: IconButton(
+                        color: Color.fromARGB(183, 4, 4, 4),
+                        icon: Icon(Icons.power_settings_new_rounded),
+                        onPressed: () {
+                          BlocProvider.of<AuthBloc>(context).add(LogoutEvent());
+                        }),
+                  )
+                ],
               ),
             ),
           ],

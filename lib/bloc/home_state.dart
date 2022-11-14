@@ -9,10 +9,13 @@ abstract class HomeState extends Equatable {
 
 class HomeInitial extends HomeState {}
 
+class reloadState extends HomeState {}
+
 class HomeRecording extends HomeState {}
 
 class favoritos extends HomeState {
-  final List listaParaPantalla = lista;
+  final List listaParaPantalla;
+  favoritos({required this.listaParaPantalla});
   @override
   List<Object> get props => [listaParaPantalla];
 }

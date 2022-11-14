@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/animation.dart';
 import 'package:practica_1_audio/datos_cancion.dart';
 import 'package:record/record.dart';
 import 'package:practica_1_audio/repositorio_audio.dart';
@@ -41,7 +45,13 @@ FutureOr<void> _recordSong(StartRecordEvent event, emit) async {
 
   DatosCancion? datos_cancion = await repo.recognizeSong(base64Song);
   if (datos_cancion != null) {
-    if (lista.indexOf(datos_cancion) == -1) {
+    var fav = await FirebaseFirestore.instance
+        .collection('favoritos')
+        .where('titulo', isEqualTo: datos_cancion.titulo)
+        .where('user', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+        .get();
+    print(fav.size == 0);
+    if (fav.size == 0) {
       emit(RecordingSucces(recordContent: datos_cancion, favFlag: false));
     } else {
       emit(RecordingSucces(recordContent: datos_cancion, favFlag: true));
@@ -51,11 +61,38 @@ FutureOr<void> _recordSong(StartRecordEvent event, emit) async {
   }
 }
 
-FutureOr<void> _clickFunction(clickOnSuccesEvent event, emit) {
+FutureOr<void> _clickFunction(clickOnSuccesEvent event, emit) async {
   switch (event.funcion_boton) {
     case 'fav':
-      lista.add(event.datos_cancion);
-      print('song added to list');
+      if (event.favFlag == false) {
+        await FirebaseFirestore.instance.collection('favoritos').add({
+          'titulo': event.datos_cancion.titulo,
+          'artista': event.datos_cancion.artista,
+          'album': event.datos_cancion.album,
+          'appleLink': event.datos_cancion.appleLink,
+          'spotifyLink': event.datos_cancion.spotifyLink,
+          'imagen': event.datos_cancion.imagen,
+          'fecha': event.datos_cancion.fecha,
+          'user': FirebaseAuth.instance.currentUser?.uid
+        });
+        emit(reloadState());
+        emit(
+            RecordingSucces(recordContent: event.datos_cancion, favFlag: true));
+      } else {
+        var removedSong = await FirebaseFirestore.instance
+            .collection('favoritos')
+            .where('user', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+            .where('titulo', isEqualTo: event.datos_cancion.titulo)
+            .get()
+            .then((querySnapshot) => querySnapshot);
+
+        for (var doc in removedSong.docs) {
+          await doc.reference.delete();
+        }
+        emit(reloadState());
+        emit(RecordingSucces(
+            recordContent: event.datos_cancion, favFlag: false));
+      }
 
       break;
     case 'spotify':
@@ -67,6 +104,20 @@ FutureOr<void> _clickFunction(clickOnSuccesEvent event, emit) {
   }
 }
 
-FutureOr<void> _showFav(verFavoritosEvent, emit) {
-  emit(favoritos());
+FutureOr<void> _showFav(verFavoritosEvent, emit) async {
+  var favoriteSongs = await getFavorites();
+  emit(favoritos(listaParaPantalla: favoriteSongs));
+}
+
+FutureOr<List<dynamic>> getFavorites() async {
+  var favoriteSongs = await FirebaseFirestore.instance
+      .collection("favoritos")
+      .where("user", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+      .get();
+
+  var mySongs = favoriteSongs.docs
+      .map((doc) => doc.data().cast<String, String>())
+      .toList();
+  print(mySongs);
+  return mySongs;
 }
